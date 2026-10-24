@@ -1,5 +1,5 @@
 // Offline support plus the share target: share a receipt screenshot to Paymo from the phone's share sheet.
-const CACHE = "paymo-v3";
+const CACHE = "paymo-v4";
 const SHELL = ["./", "index.html", "parse.js", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png"];
 const CDN = "https://cdn.jsdelivr.net/";
 

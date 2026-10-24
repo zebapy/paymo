@@ -63,12 +63,21 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid 
 .tip { display: grid; justify-items: center; gap: 4px; text-align: center; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line); }
 .tip a { color: var(--accent); font-weight: 700; text-decoration: none; border: 1.5px solid var(--accent); border-radius: 999px; padding: 8px 16px; }
 .tip .muted { font-size: 13px; }
-.demo { background: var(--paper); border: 1px solid var(--line); border-radius: 16px; padding: 14px; display: grid; gap: 8px; margin-bottom: 8px; }
-.demo-head { display: flex; justify-content: space-between; align-items: baseline; }
-.demo-items { display: grid; gap: 6px; }
-.demo .item { padding: 10px 12px; font-size: 15px; border-radius: 10px; }
-.demo-sum { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; font-size: 13px; color: var(--muted); }
-.demo-pay { font-size: 15px; padding: 11px; cursor: default; }
+.stage { display: grid; justify-items: center; gap: 10px; padding-block: 8px 4px; perspective: 1200px; }
+.phone { position: relative; width: min(250px, 72vw); padding: 10px; border-radius: 38px; background: #121715; box-shadow: 0 24px 48px -16px rgb(0 0 0 / .45), inset 0 0 0 2px #3a4541; transform: rotateX(8deg) rotateY(-14deg) rotateZ(3deg); transform-style: preserve-3d; transition: transform .4s ease; }
+.phone:hover, .phone:focus-within { transform: rotateX(4deg) rotateY(-6deg) rotateZ(1deg); }
+.screen { position: relative; background: var(--bg); border-radius: 29px; padding: 30px 12px 14px; display: grid; gap: 6px; overflow: hidden; }
+.notch { position: absolute; top: 9px; left: 50%; width: 64px; height: 16px; margin-left: -32px; border-radius: 999px; background: #121715; }
+.badge { position: absolute; top: -10px; right: -14px; z-index: 2; background: #f2c14e; color: #2b2000; font-weight: 800; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; padding: 5px 12px; border-radius: 999px; transform: rotate(8deg); box-shadow: 0 4px 10px rgb(0 0 0 / .2); }
+.demo-title { font-size: 15px; }
+.demo-to { font-size: 11px; color: var(--muted); margin-top: -4px; }
+.demo-to b { color: var(--ink); }
+.demo-items { display: grid; gap: 5px; }
+.screen .item { padding: 8px 10px; font-size: 13px; border-radius: 9px; border-width: 1.5px; }
+.demo-sum { display: grid; grid-template-columns: 1fr auto; gap: 1px 8px; font-size: 11px; color: var(--muted); }
+.demo-pay { font-size: 13px; padding: 9px; cursor: default; }
+.caption { margin: 0; font-size: 13px; }
+@media (prefers-reduced-motion: reduce) { .phone { transition: none; } }
 .drop { display: grid; place-items: center; text-align: center; gap: 6px; min-height: 150px; border: 2px dashed var(--line); border-radius: 16px; background: var(--paper); padding: 24px; cursor: pointer; }
 .drop.over { border-color: var(--accent); }
 .drop strong { font-size: 18px; }
@@ -110,11 +119,19 @@ input[type="number"] { font-family: var(--mono); }
 <main class="wrap" id="create" hidden>
   <h1>Split a receipt</h1>
   <p class="muted" style="margin:0 0 4px">Drop in a receipt, send one link to the group, and everyone taps what they ordered and pays you on Venmo.</p>
-  <section class="demo" aria-label="Demo of what your friends see">
-    <div class="demo-head"><span class="label">What your friends see</span><span class="muted">Tap to try</span></div>
-    <div class="demo-items" id="demo-items"></div>
-    <div class="demo-sum"><span>Food</span><span class="price" id="demo-food"></span><span>Tax, fees and tip</span><span class="price" id="demo-ext"></span></div>
-    <div class="btn demo-pay" id="demo-pay"></div>
+  <section class="stage" aria-label="Example of what your friends see">
+    <div class="phone">
+      <span class="badge">Example</span>
+      <div class="screen">
+        <div class="notch"></div>
+        <strong class="demo-title">Taco Tuesday</strong>
+        <span class="demo-to">Paying <b>@your-name</b> on Venmo</span>
+        <div class="demo-items" id="demo-items"></div>
+        <div class="demo-sum"><span>Food</span><span class="price" id="demo-food"></span><span>Tax, fees and tip</span><span class="price" id="demo-ext"></span></div>
+        <div class="btn demo-pay" id="demo-pay"></div>
+      </div>
+    </div>
+    <p class="muted caption">What your friends see. Tap the items to try it.</p>
   </section>
   <label class="drop" id="drop" for="file">
     <strong>Drop a receipt screenshot</strong>
