@@ -60,6 +60,9 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid 
 .btn.ghost { background: transparent; color: var(--accent); border: 2px solid var(--accent); }
 
 /* creator view */
+.tip { display: grid; justify-items: center; gap: 4px; text-align: center; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line); }
+.tip a { color: var(--accent); font-weight: 700; text-decoration: none; border: 1.5px solid var(--accent); border-radius: 999px; padding: 8px 16px; }
+.tip .muted { font-size: 13px; }
 .demo { background: var(--paper); border: 1px solid var(--line); border-radius: 16px; padding: 14px; display: grid; gap: 8px; margin-bottom: 8px; }
 .demo-head { display: flex; justify-content: space-between; align-items: baseline; }
 .demo-items { display: grid; gap: 6px; }
@@ -154,6 +157,10 @@ input[type="number"] { font-family: var(--mono); }
       <a class="link-btn" id="preview" target="_blank" rel="noopener">Preview what friends see</a>
     </div>
   </section>
+  <footer class="tip">
+    <a href="https://venmo.com/?txn=pay&amp;audience=private&amp;recipients=zebpykosz&amp;amount=4.00&amp;note=%F0%9F%A5%90%20Croissant%20for%20the%20Paymo%20maker" target="_blank" rel="noopener">🥐 Buy me a croissant</a>
+    <span class="muted">Paymo is free. If it saved you some math, a croissant is appreciated.</span>
+  </footer>
 </main>
 
 <script src="parse.js"></script>
