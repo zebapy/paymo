@@ -33,7 +33,9 @@
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.4; }
 .wrap { max-width: 520px; margin: 0 auto; padding-block: max(16px, env(safe-area-inset-top, 0px)) 200px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 8px; }
-h1 { font-size: 20px; margin: 4px 0 8px; }
+h1 { font-size: 20px; margin: 4px 0 0; }
+.to { margin: 0 0 8px; color: var(--muted); font-size: 15px; }
+.to strong { color: var(--ink); }
 .num, .price { font-family: var(--mono); font-variant-numeric: tabular-nums; }
 .muted { color: var(--muted); font-size: 14px; }
 [hidden] { display: none !important; }
@@ -80,6 +82,7 @@ input[type="number"] { font-family: var(--mono); }
 
 <main class="wrap" id="friend" hidden>
   <h1 id="f-title"></h1>
+  <p class="to" id="f-to"></p>
   <div id="f-items" style="display:grid;gap:8px"></div>
 </main>
 <div class="bar" id="f-bar" hidden>
@@ -160,6 +163,7 @@ function showFriend(order) {
   $("friend").hidden = false;
   $("f-bar").hidden = false;
   $("f-title").textContent = order.t || "Your share";
+  $("f-to").append("Paying ", Object.assign(document.createElement("strong"), { textContent: "@" + order.v }), " on Venmo");
   document.title = order.t ? `${order.t} · Paymo` : "Paymo";
   const subtotal = order.i.reduce((s, [, c]) => s + c, 0);
   const picked = new Set();
