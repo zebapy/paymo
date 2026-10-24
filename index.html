@@ -121,7 +121,6 @@ input[type="number"] { font-family: var(--mono); }
       </div>
       <span class="check" id="check"></span>
     </div>
-    <button class="btn" id="make" type="button">Create split link</button>
     <div class="card" id="result" hidden>
       <span class="label">Send this to the group</span>
       <div class="out" id="out"></div>
@@ -212,7 +211,7 @@ function rowFor(list, entry, onChange) {
   name.setAttribute("aria-label", "Name");
   price.setAttribute("aria-label", "Amount");
   del.setAttribute("aria-label", "Remove");
-  name.addEventListener("input", () => { entry.name = name.value; });
+  name.addEventListener("input", () => { entry.name = name.value; updateLink(); });
   price.addEventListener("input", () => { entry.cents = toCents(price.value); onChange(); });
   del.addEventListener("click", () => { list.splice(list.indexOf(entry), 1); renderEditor(); });
   row.append(name, price, del);
@@ -235,7 +234,24 @@ function renderTotals() {
     check.className = "check bad";
     check.textContent = `Receipt says ${fmt(draft.receiptTotal)}, off by ${fmt(Math.abs(draft.receiptTotal - items - extras))}. Fix a line above.`;
   }
-  $("result").hidden = true;
+  updateLink();
+}
+
+// The share link is rebuilt on every edit, so it's always ready to send.
+let shareUrl = "";
+function updateLink() {
+  const order = {
+    t: $("title").value.trim(),
+    v: $("venmo").value.trim().replace(/^@/, ""),
+    i: draft.items.filter(i => i.name.trim() && i.cents > 0).map(i => [i.name.trim(), i.cents]),
+    x: draft.extras.reduce((s, x) => s + x.cents, 0),
+  };
+  const ready = order.v && order.i.length;
+  $("result").hidden = !ready;
+  shareUrl = ready ? `${location.origin}${location.pathname}#o=${encodeOrder(order)}` : "";
+  $("out").textContent = shareUrl;
+  $("preview").href = shareUrl;
+  $("share").textContent = navigator.share ? "Share" : "Copy link";
 }
 
 function renderEditor() {
@@ -298,30 +314,14 @@ function showCreate() {
   $("add-item").addEventListener("click", () => { draft.items.push({ name: "", cents: 0 }); renderEditor(); });
   $("add-extra").addEventListener("click", () => { draft.extras.push({ name: "", cents: 0 }); renderEditor(); });
 
-  $("make").addEventListener("click", () => {
-    const order = {
-      t: $("title").value.trim(),
-      v: $("venmo").value.trim().replace(/^@/, ""),
-      i: draft.items.filter(i => i.name.trim() && i.cents > 0).map(i => [i.name.trim(), i.cents]),
-      x: draft.extras.reduce((s, x) => s + x.cents, 0),
-    };
-    if (!order.v || !order.i.length) {
-      $("check").className = "check bad";
-      $("check").textContent = !order.v ? "Add your Venmo username." : "Add at least one item with a price.";
-      return;
+  $("title").addEventListener("input", updateLink);
+  $("venmo").addEventListener("input", updateLink);
+  $("share").addEventListener("click", () => {
+    if (navigator.share) {
+      navigator.share({ title: $("title").value.trim() || "Split the bill", text: "Tap what you ordered and pay on Venmo", url: shareUrl });
+    } else {
+      navigator.clipboard.writeText(shareUrl).then(() => { $("share").textContent = "Copied"; });
     }
-    const url = `${location.origin}${location.pathname}#o=${encodeOrder(order)}`;
-    $("out").textContent = url;
-    $("preview").href = url;
-    $("result").hidden = false;
-    $("share").onclick = () => {
-      if (navigator.share) {
-        navigator.share({ title: order.t || "Split the bill", text: "Tap what you ordered and pay on Venmo", url });
-      } else {
-        navigator.clipboard.writeText(url).then(() => { $("share").textContent = "Copied"; });
-      }
-    };
-    $("share").textContent = navigator.share ? "Share" : "Copy link";
   });
 }
 
