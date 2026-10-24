@@ -60,6 +60,8 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid 
 .btn.ghost { background: transparent; color: var(--accent); border: 2px solid var(--accent); }
 
 /* creator view */
+.alt-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.camera-btn { display: inline-flex; align-items: center; gap: 8px; width: auto; margin: 0; padding: 10px 18px; font-size: 15px; }
 .tip { display: grid; justify-items: center; gap: 4px; text-align: center; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line); }
 .tip a { color: var(--accent); font-weight: 700; text-decoration: none; border: 1.5px solid var(--accent); border-radius: 999px; padding: 8px 16px; }
 .tip .muted { font-size: 13px; }
@@ -142,7 +144,11 @@ input[type="number"] { font-family: var(--mono); }
     <span class="muted" id="status"></span>
   </label>
   <input type="file" id="file" accept="image/*" hidden>
-  <button class="link-btn" id="manual" type="button">Type it in instead</button>
+  <input type="file" id="camera" accept="image/*" capture="environment" hidden>
+  <div class="alt-actions">
+    <label class="btn ghost camera-btn" for="camera"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Take photo</label>
+    <button class="link-btn" id="manual" type="button">Type it in instead</button>
+  </div>
   <ul class="why" id="why" aria-label="Why use this">
     <li><strong>Friends don't download anything</strong><span class="muted">Text them a link. No app and no sign-up, unlike Splitwise, Tab and the other split apps.</span></li>
     <li><strong>Everyone pays for what they ordered</strong><span class="muted">Friends tap their own items, not an even split like Venmo's.</span></li>
@@ -403,6 +409,7 @@ function showCreate() {
   const drop = $("drop");
   const read = f => readImage(f).catch(() => { $("status").textContent = "Couldn't read that image. Try another screenshot or type it in."; });
   $("file").addEventListener("change", e => { if (e.target.files[0]) read(e.target.files[0]); });
+  $("camera").addEventListener("change", e => { if (e.target.files[0]) read(e.target.files[0]); });
   drop.addEventListener("dragover", e => { e.preventDefault(); drop.classList.add("over"); });
   drop.addEventListener("dragleave", () => drop.classList.remove("over"));
   drop.addEventListener("drop", e => {
