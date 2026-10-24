@@ -1,7 +1,8 @@
 // Turns OCR text from a receipt screenshot into items and extras (tax, fees, tip).
 // Works for DoorDash-style receipts ("1x Item" then "$price") and plain "Item ... 12.99" lines.
 (function (root) {
-  const PRICE = /(-?)\$?\s?(\d{1,4}\.\d{2})(?!\d)/g;
+  // "$13.19", "13.19", or "$1319" when OCR drops the decimal point.
+  const PRICE = /(-?)(?:\$?\s?(\d{1,4})\.(\d{2})|\$(\d{1,3})(\d{2}))(?![\d.])/g;
   const QTY_LINE = /(\d{1,2})\s*[x×]\s+([A-Za-z].*)$/;
   const SUBTOTAL = /\bsub\s?total\b/i;
   const TOTAL = /^\W*\w{0,2}\W*total\b/i;
@@ -11,8 +12,8 @@
   function lastPrice(line) {
     const found = [...line.matchAll(PRICE)];
     if (!found.length) return null;
-    const [, neg, num] = found[found.length - 1];
-    return Math.round(parseFloat(num) * 100) * (neg ? -1 : 1);
+    const [, neg, dollars, cents, bareDollars, bareCents] = found[found.length - 1];
+    return (parseInt(dollars || bareDollars, 10) * 100 + parseInt(cents || bareCents, 10)) * (neg ? -1 : 1);
   }
 
   function cleanName(text) {
@@ -45,6 +46,7 @@
       const price = lastPrice(line);
       if (SUBTOTAL.test(line)) { subtotal = price; continue; }
       if (TOTAL.test(line)) { total = price; break; }
+      if (pending && (EXTRA.test(line) || DISCOUNT.test(line))) { items.push(...expand(pending.name, pending.qty, 0)); pending = null; }
       if (price !== null && (EXTRA.test(line) || DISCOUNT.test(line))) {
         const cents = DISCOUNT.test(line) ? -Math.abs(price) : price;
         if (cents !== 0) extras.push({ name: cleanName(line.split("$")[0]) || "Fee", cents });
@@ -52,6 +54,8 @@
       }
       const q = line.match(QTY_LINE);
       if (q) {
+        // An item whose price line was unreadable stays in the list at $0 so it can be fixed by hand.
+        if (pending) items.push(...expand(pending.name, pending.qty, 0));
         pending = { qty: parseInt(q[1], 10), name: cleanName(q[2]) };
         if (price !== null) { items.push(...expand(pending.name, pending.qty, price)); pending = null; }
         continue;
