@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Paymo</title>
+<title>Tabsies</title>
 <meta name="description" content="Tap what you ordered and pay your share on Venmo.">
 <meta property="og:title" content="Split the bill">
 <meta property="og:description" content="Tap what you ordered and pay your share on Venmo.">
@@ -191,8 +191,8 @@ input[type="number"] { font-family: var(--mono); }
     </div>
   </section>
   <footer class="tip">
-    <a href="https://venmo.com/?txn=pay&amp;audience=private&amp;recipients=zebpykosz&amp;amount=4.00&amp;note=%F0%9F%A5%90%20Croissant%20for%20the%20Paymo%20maker" target="_blank" rel="noopener">🥐 Buy me a croissant</a>
-    <span class="muted">Paymo is free. If it saved you some math, a croissant is appreciated.</span>
+    <a href="https://venmo.com/?txn=pay&amp;audience=private&amp;recipients=zebpykosz&amp;amount=4.00&amp;note=%F0%9F%A5%90%20Croissant%20for%20the%20Tabsies%20maker" target="_blank" rel="noopener">🥐 Buy me a croissant</a>
+    <span class="muted">Tabsies is free. If it saved you some math, a croissant is appreciated.</span>
   </footer>
 </main>
 
@@ -221,7 +221,7 @@ function showFriend(order) {
   $("f-bar").hidden = false;
   $("f-title").textContent = order.t || "Your share";
   $("f-to").append("Paying ", Object.assign(document.createElement("strong"), { textContent: "@" + order.v }), " on Venmo");
-  document.title = order.t ? `${order.t} · Paymo` : "Paymo";
+  document.title = order.t ? `${order.t} · Tabsies` : "Tabsies";
   const subtotal = order.i.reduce((s, [, c]) => s + c, 0);
   const picked = new Set();
 

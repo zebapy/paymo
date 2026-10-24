@@ -1,4 +1,4 @@
-# Paymo
+# Tabsies
 
 Split a food order on Venmo from a receipt screenshot.
 
@@ -12,4 +12,4 @@ Deployed to GitHub Pages from `main` by `.github/workflows/pages.yml`.
 
 ## Install as an app
 
-Paymo is a PWA. On Android, open the site in Chrome and choose "Add to Home screen". Once installed, Paymo appears in the share sheet, so you can share a receipt screenshot straight into it. On iPhone, use Safari's Share → "Add to Home Screen". Your Venmo username is saved on your device.
+Tabsies is a PWA. On Android, open the site in Chrome and choose "Add to Home screen". Once installed, Tabsies appears in the share sheet, so you can share a receipt screenshot straight into it. On iPhone, use Safari's Share → "Add to Home Screen". Your Venmo username is saved on your device.

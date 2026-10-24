@@ -1,6 +1,6 @@
 {
-  "name": "Paymo",
-  "short_name": "Paymo",
+  "name": "Tabsies",
+  "short_name": "Tabsies",
   "description": "Split a food order on Venmo from a receipt screenshot.",
   "start_url": "./",
   "scope": "./",
