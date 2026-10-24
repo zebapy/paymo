@@ -60,7 +60,13 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid 
 .btn.ghost { background: transparent; color: var(--accent); border: 2px solid var(--accent); }
 
 /* creator view */
-.drop { display: grid; place-items: center; text-align: center; gap: 6px; min-height: 220px; border: 2px dashed var(--line); border-radius: 16px; background: var(--paper); padding: 24px; cursor: pointer; }
+.demo { background: var(--paper); border: 1px solid var(--line); border-radius: 16px; padding: 14px; display: grid; gap: 8px; margin-bottom: 8px; }
+.demo-head { display: flex; justify-content: space-between; align-items: baseline; }
+.demo-items { display: grid; gap: 6px; }
+.demo .item { padding: 10px 12px; font-size: 15px; border-radius: 10px; }
+.demo-sum { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; font-size: 13px; color: var(--muted); }
+.demo-pay { font-size: 15px; padding: 11px; cursor: default; }
+.drop { display: grid; place-items: center; text-align: center; gap: 6px; min-height: 150px; border: 2px dashed var(--line); border-radius: 16px; background: var(--paper); padding: 24px; cursor: pointer; }
 .drop.over { border-color: var(--accent); }
 .drop strong { font-size: 18px; }
 .card { background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: grid; gap: 8px; }
@@ -100,6 +106,13 @@ input[type="number"] { font-family: var(--mono); }
 
 <main class="wrap" id="create" hidden>
   <h1>Split a receipt</h1>
+  <p class="muted" style="margin:0 0 4px">Drop in a receipt, send one link to the group, and everyone taps what they ordered and pays you on Venmo.</p>
+  <section class="demo" aria-label="Demo of what your friends see">
+    <div class="demo-head"><span class="label">What your friends see</span><span class="muted">Tap to try</span></div>
+    <div class="demo-items" id="demo-items"></div>
+    <div class="demo-sum"><span>Food</span><span class="price" id="demo-food"></span><span>Tax, fees and tip</span><span class="price" id="demo-ext"></span></div>
+    <div class="btn demo-pay" id="demo-pay"></div>
+  </section>
   <label class="drop" id="drop" for="file">
     <strong>Drop a receipt screenshot</strong>
     <span class="muted">or tap to choose one, or paste it</span>
@@ -322,8 +335,36 @@ async function readImage(file) {
   renderEditor();
 }
 
+// A self-contained sample of the friend view, so first-time visitors see what the link does.
+function renderDemo() {
+  const sample = [["Cheeseburger", 1319, true], ["Little Fries", 659, true], ["Milkshake", 779, false], ["Hot Dog", 749, false]];
+  const extras = 750;
+  const subtotal = sample.reduce((s, [, c]) => s + c, 0);
+  const update = () => {
+    const food = sample.filter(x => x[2]).reduce((s, [, c]) => s + c, 0);
+    const extra = Math.round(extras * food / subtotal);
+    $("demo-food").textContent = fmt(food);
+    $("demo-ext").textContent = fmt(extra);
+    $("demo-pay").textContent = food ? `Pay ${fmt(food + extra)} on Venmo` : "Tap what you ordered";
+    $("demo-pay").setAttribute("aria-disabled", String(!food));
+  };
+  $("demo-items").replaceChildren(...sample.map(entry => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "item";
+    b.innerHTML = '<span class="name"></span><span class="price"></span>';
+    b.querySelector(".name").textContent = entry[0];
+    b.querySelector(".price").textContent = fmt(entry[1]);
+    b.setAttribute("aria-pressed", String(entry[2]));
+    b.addEventListener("click", () => { entry[2] = !entry[2]; b.setAttribute("aria-pressed", String(entry[2])); update(); });
+    return b;
+  }));
+  update();
+}
+
 function showCreate() {
   $("create").hidden = false;
+  renderDemo();
   const drop = $("drop");
   const read = f => readImage(f).catch(() => { $("status").textContent = "Couldn't read that image. Try another screenshot or type it in."; });
   $("file").addEventListener("change", e => { if (e.target.files[0]) read(e.target.files[0]); });
@@ -352,7 +393,7 @@ function showCreate() {
   });
   if (new URLSearchParams(location.search).has("shared")) {
     history.replaceState(null, "", location.pathname);
-    caches.open("paymo-v1").then(async cache => {
+    caches.open("paymo-share").then(async cache => {
       const shared = await cache.match("shared-receipt");
       if (!shared) return;
       await cache.delete("shared-receipt");
