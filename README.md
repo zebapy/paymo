@@ -9,3 +9,7 @@ Split a food order on Venmo from a receipt screenshot.
 The order is stored in the link itself (`#o=…`), so there's no backend or database.
 
 Deployed to GitHub Pages from `main` by `.github/workflows/pages.yml`.
+
+## Install as an app
+
+Paymo is a PWA. On Android, open the site in Chrome and choose "Add to Home screen". Once installed, Paymo appears in the share sheet, so you can share a receipt screenshot straight into it. On iPhone, use Safari's Share → "Add to Home Screen". Your Venmo username is saved on your device.

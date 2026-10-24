@@ -7,7 +7,11 @@
 <meta name="description" content="Tap what you ordered and pay your share on Venmo.">
 <meta property="og:title" content="Split the bill">
 <meta property="og:description" content="Tap what you ordered and pay your share on Venmo.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A7%BE%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0b7a5c">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;700&family=JetBrains+Mono:wght@500;600&display=swap">
 <style>
@@ -107,7 +111,7 @@ input[type="number"] { font-family: var(--mono); }
   <section id="editor" hidden style="display:grid;gap:12px">
     <div class="card">
       <div class="field"><label class="label" for="title">Order</label><input type="text" id="title" placeholder="Five Guys 10/23"></div>
-      <div class="field"><label class="label" for="venmo">Pay to (your Venmo)</label><input type="text" id="venmo" value="zebpykosz"></div>
+      <div class="field"><label class="label" for="venmo">Pay to (your Venmo)</label><input type="text" id="venmo" placeholder="your-username" autocapitalize="off" autocomplete="off" spellcheck="false"></div>
     </div>
     <div class="card">
       <span class="label">Items</span>
@@ -340,7 +344,21 @@ function showCreate() {
   $("add-extra").addEventListener("click", () => { draft.extras.push({ name: "", cents: 0 }); renderEditor(); });
 
   $("title").addEventListener("input", updateLink);
-  $("venmo").addEventListener("input", updateLink);
+  // Your Venmo username is remembered on this device only.
+  $("venmo").value = localStorage.getItem("paymo-venmo") || "";
+  $("venmo").addEventListener("input", () => {
+    localStorage.setItem("paymo-venmo", $("venmo").value.trim().replace(/^@/, ""));
+    updateLink();
+  });
+  if (new URLSearchParams(location.search).has("shared")) {
+    history.replaceState(null, "", location.pathname);
+    caches.open("paymo-v1").then(async cache => {
+      const shared = await cache.match("shared-receipt");
+      if (!shared) return;
+      await cache.delete("shared-receipt");
+      read(await shared.blob());
+    });
+  }
   $("copy").addEventListener("click", () => {
     navigator.clipboard.writeText(shareUrl).then(() => { $("copy").textContent = "Copied"; });
   });
@@ -348,6 +366,8 @@ function showCreate() {
     navigator.share({ title: $("title").value.trim() || "Split the bill", text: "Tap what you ordered and pay on Venmo", url: shareUrl });
   });
 }
+
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
 
 const match = location.hash.match(/^#o=([A-Za-z0-9_-]+)$/);
 match ? showFriend(decodeOrder(match[1])) : showCreate();
