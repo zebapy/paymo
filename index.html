@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Paymo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;700&family=JetBrains+Mono:wght@500;600&display=swap">
+<style>
+:root {
+  --bg: #f3f5f4;
+  --paper: #ffffff;
+  --ink: #17201d;
+  --muted: #5d6b66;
+  --line: #dde3e0;
+  --accent: #0b7a5c;
+  --accent-ink: #ffffff;
+  --warn: #a35a00;
+  --body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1412; --paper: #18201d; --ink: #e7eeea; --muted: #9aaba4; --line: #2b3632;
+    --accent: #3ccf9f; --accent-ink: #062018; --warn: #ffb44d; color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.4; }
+.wrap { max-width: 520px; margin: 0 auto; padding-block: max(16px, env(safe-area-inset-top, 0px)) 200px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 8px; }
+h1 { font-size: 20px; margin: 4px 0 8px; }
+.num, .price { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); font-size: 14px; }
+[hidden] { display: none !important; }
+button, input, a { font: inherit; }
+button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* friend view */
+.item { display: flex; justify-content: space-between; align-items: center; gap: 12px; width: 100%; text-align: left; color: var(--ink); background: var(--paper); border: 2px solid var(--line); border-radius: 12px; padding: 14px 16px; cursor: pointer; }
+.item[aria-pressed="true"] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--paper)); }
+.item .name { font-weight: 600; }
+.item .price { color: var(--muted); }
+.item[aria-pressed="true"] .price { color: var(--ink); }
+.bar { position: fixed; left: 0; right: 0; bottom: 0; padding-block: 12px calc(12px + env(safe-area-inset-bottom, 0px)); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); background: var(--bg); border-top: 1px solid var(--line); }
+.sum { max-width: 520px; margin: 0 auto 10px; display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; font-size: 14px; color: var(--muted); }
+.sum .tot { color: var(--ink); font-weight: 700; }
+.btn { display: block; width: 100%; max-width: 520px; margin: 0 auto; text-align: center; text-decoration: none; font-weight: 700; font-size: 17px; background: var(--accent); color: var(--accent-ink); border: none; border-radius: 999px; padding: 15px; cursor: pointer; }
+.btn[aria-disabled="true"] { background: var(--line); color: var(--muted); pointer-events: none; }
+.btn.ghost { background: transparent; color: var(--accent); border: 2px solid var(--accent); }
+
+/* creator view */
+.drop { display: grid; place-items: center; text-align: center; gap: 6px; min-height: 220px; border: 2px dashed var(--line); border-radius: 16px; background: var(--paper); padding: 24px; cursor: pointer; }
+.drop.over { border-color: var(--accent); }
+.drop strong { font-size: 18px; }
+.card { background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: grid; gap: 8px; }
+.row { display: grid; grid-template-columns: 1fr 96px 32px; gap: 8px; align-items: center; }
+.field { display: grid; gap: 4px; }
+.label { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+input[type="text"], input[type="number"] { width: 100%; min-width: 0; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+input[type="number"] { font-family: var(--mono); }
+.x { height: 36px; border: 1px solid var(--line); background: transparent; color: var(--muted); border-radius: 8px; cursor: pointer; }
+.link-btn { border: none; background: none; color: var(--accent); font-weight: 600; padding: 4px 0; justify-self: start; cursor: pointer; }
+.totals { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; }
+.check { font-size: 14px; font-weight: 600; }
+.check.ok { color: var(--accent); }
+.check.bad { color: var(--warn); }
+.out { word-break: break-all; font-family: var(--mono); font-size: 12px; color: var(--muted); user-select: all; }
+.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+</style>
+</head>
+<body>
+
+<main class="wrap" id="friend" hidden>
+  <h1 id="f-title"></h1>
+  <div id="f-items" style="display:grid;gap:8px"></div>
+</main>
+<div class="bar" id="f-bar" hidden>
+  <div class="sum" id="f-sum" hidden>
+    <span>Food</span><span class="price" id="f-food"></span>
+    <span>Tax, fees and tip</span><span class="price" id="f-ext"></span>
+    <span class="tot">Total</span><span class="price tot" id="f-tot"></span>
+  </div>
+  <a class="btn" id="f-pay" target="_blank" rel="noopener" aria-disabled="true">Tap what you ordered</a>
+</div>
+
+<main class="wrap" id="create" hidden>
+  <h1>Split a receipt</h1>
+  <label class="drop" id="drop" for="file">
+    <strong>Drop a receipt screenshot</strong>
+    <span class="muted">or tap to choose one, or paste it</span>
+    <span class="muted" id="status"></span>
+  </label>
+  <input type="file" id="file" accept="image/*" hidden>
+  <button class="link-btn" id="manual" type="button">Type it in instead</button>
+
+  <section id="editor" hidden style="display:grid;gap:12px">
+    <div class="card">
+      <div class="field"><label class="label" for="title">Order</label><input type="text" id="title" placeholder="Five Guys 10/23"></div>
+      <div class="field"><label class="label" for="venmo">Pay to (your Venmo)</label><input type="text" id="venmo" value="zebpykosz"></div>
+    </div>
+    <div class="card">
+      <span class="label">Items</span>
+      <div id="items" style="display:grid;gap:8px"></div>
+      <button class="link-btn" id="add-item" type="button">+ Add item</button>
+    </div>
+    <div class="card">
+      <span class="label">Tax, fees and tip</span>
+      <div id="extras" style="display:grid;gap:8px"></div>
+      <button class="link-btn" id="add-extra" type="button">+ Add fee</button>
+    </div>
+    <div class="card">
+      <div class="totals">
+        <span>Items</span><span class="num" id="t-items"></span>
+        <span>Tax, fees and tip</span><span class="num" id="t-extras"></span>
+        <strong>Total</strong><strong class="num" id="t-total"></strong>
+      </div>
+      <span class="check" id="check"></span>
+    </div>
+    <button class="btn" id="make" type="button">Create split link</button>
+    <div class="card" id="result" hidden>
+      <span class="label">Send this to the group</span>
+      <div class="out" id="out"></div>
+      <div class="actions">
+        <button class="btn" id="share" type="button">Share</button>
+        <a class="btn ghost" id="preview" target="_blank" rel="noopener">Preview</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="parse.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const fmt = c => "$" + (c / 100).toFixed(2);
+const toCents = v => Math.round((parseFloat(v) || 0) * 100);
+
+// Order data lives entirely in the link: #o=<base64url JSON>, so there's no database.
+function encodeOrder(order) {
+  const bytes = new TextEncoder().encode(JSON.stringify(order));
+  let bin = "";
+  bytes.forEach(b => { bin += String.fromCharCode(b); });
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+function decodeOrder(str) {
+  const bin = atob(str.replace(/-/g, "+").replace(/_/g, "/"));
+  return JSON.parse(new TextDecoder().decode(Uint8Array.from(bin, c => c.charCodeAt(0))));
+}
+
+/* ---------- friend view ---------- */
+function showFriend(order) {
+  // order: { t: title, v: venmo, i: [[name, cents], ...], x: extras cents }
+  $("friend").hidden = false;
+  $("f-bar").hidden = false;
+  $("f-title").textContent = order.t || "Your share";
+  document.title = order.t ? `${order.t} · Paymo` : "Paymo";
+  const subtotal = order.i.reduce((s, [, c]) => s + c, 0);
+  const picked = new Set();
+
+  order.i.forEach(([name, cents], k) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "item";
+    b.setAttribute("aria-pressed", "false");
+    b.innerHTML = '<span class="name"></span><span class="price"></span>';
+    b.querySelector(".name").textContent = name;
+    b.querySelector(".price").textContent = fmt(cents);
+    b.addEventListener("click", () => {
+      picked.has(k) ? picked.delete(k) : picked.add(k);
+      b.setAttribute("aria-pressed", String(picked.has(k)));
+      update();
+    });
+    $("f-items").append(b);
+  });
+
+  function update() {
+    const food = [...picked].reduce((s, k) => s + order.i[k][1], 0);
+    const extra = subtotal ? Math.round(order.x * food / subtotal) : 0;
+    const total = food + extra;
+    const pay = $("f-pay");
+    $("f-sum").hidden = !picked.size;
+    $("f-food").textContent = fmt(food);
+    $("f-ext").textContent = fmt(extra);
+    $("f-tot").textContent = fmt(total);
+    if (!picked.size) {
+      pay.removeAttribute("href");
+      pay.setAttribute("aria-disabled", "true");
+      pay.textContent = "Tap what you ordered";
+      return;
+    }
+    const note = `${order.t ? order.t + ": " : ""}${[...picked].map(k => order.i[k][0]).join(", ")}`;
+    const q = new URLSearchParams({ txn: "pay", audience: "private", recipients: order.v, amount: (total / 100).toFixed(2), note });
+    pay.href = "https://venmo.com/?" + q.toString();
+    pay.setAttribute("aria-disabled", "false");
+    pay.textContent = `Pay ${fmt(total)} on Venmo`;
+  }
+}
+
+/* ---------- creator view ---------- */
+const draft = { items: [], extras: [], receiptTotal: null };
+
+function rowFor(list, entry, onChange) {
+  const row = document.createElement("div");
+  row.className = "row";
+  const name = Object.assign(document.createElement("input"), { type: "text", value: entry.name });
+  const price = Object.assign(document.createElement("input"), { type: "number", step: "0.01", value: (entry.cents / 100).toFixed(2) });
+  const del = Object.assign(document.createElement("button"), { type: "button", className: "x", textContent: "×" });
+  name.setAttribute("aria-label", "Name");
+  price.setAttribute("aria-label", "Amount");
+  del.setAttribute("aria-label", "Remove");
+  name.addEventListener("input", () => { entry.name = name.value; });
+  price.addEventListener("input", () => { entry.cents = toCents(price.value); onChange(); });
+  del.addEventListener("click", () => { list.splice(list.indexOf(entry), 1); renderEditor(); });
+  row.append(name, price, del);
+  return row;
+}
+
+function renderTotals() {
+  const items = draft.items.reduce((s, i) => s + i.cents, 0);
+  const extras = draft.extras.reduce((s, x) => s + x.cents, 0);
+  $("t-items").textContent = fmt(items);
+  $("t-extras").textContent = fmt(extras);
+  $("t-total").textContent = fmt(items + extras);
+  const check = $("check");
+  if (draft.receiptTotal === null) {
+    check.textContent = "";
+  } else if (draft.receiptTotal === items + extras) {
+    check.className = "check ok";
+    check.textContent = `Matches the receipt total of ${fmt(draft.receiptTotal)}`;
+  } else {
+    check.className = "check bad";
+    check.textContent = `Receipt says ${fmt(draft.receiptTotal)}, off by ${fmt(Math.abs(draft.receiptTotal - items - extras))}. Fix a line above.`;
+  }
+  $("result").hidden = true;
+}
+
+function renderEditor() {
+  $("editor").hidden = false;
+  $("items").replaceChildren(...draft.items.map(i => rowFor(draft.items, i, renderTotals)));
+  $("extras").replaceChildren(...draft.extras.map(x => rowFor(draft.extras, x, renderTotals)));
+  renderTotals();
+}
+
+let tesseractLoad = null;
+function loadTesseract() {
+  tesseractLoad = tesseractLoad || new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js";
+    s.onload = () => resolve(window.Tesseract);
+    s.onerror = () => reject(new Error("Couldn't load the text reader. Check your connection and try again."));
+    document.head.append(s);
+  });
+  return tesseractLoad;
+}
+
+async function readImage(file) {
+  const status = $("status");
+  status.textContent = "Loading text reader…";
+  const Tesseract = await loadTesseract().catch(err => { status.textContent = err.message; });
+  if (!Tesseract) return;
+  const worker = await Tesseract.createWorker("eng", 1, {
+    logger: m => { if (m.status === "recognizing text") status.textContent = `Reading receipt… ${Math.round(m.progress * 100)}%`; },
+  });
+  const { data } = await worker.recognize(file);
+  await worker.terminate();
+  const parsed = parseReceipt(data.text);
+  draft.items = parsed.items;
+  draft.extras = parsed.extras;
+  draft.receiptTotal = parsed.total;
+  status.textContent = parsed.items.length
+    ? `Found ${parsed.items.length} items. Check them below.`
+    : "Couldn't find items in that image. Add them below.";
+  renderEditor();
+}
+
+function showCreate() {
+  $("create").hidden = false;
+  const drop = $("drop");
+  const read = f => readImage(f).catch(() => { $("status").textContent = "Couldn't read that image. Try another screenshot or type it in."; });
+  $("file").addEventListener("change", e => { if (e.target.files[0]) read(e.target.files[0]); });
+  drop.addEventListener("dragover", e => { e.preventDefault(); drop.classList.add("over"); });
+  drop.addEventListener("dragleave", () => drop.classList.remove("over"));
+  drop.addEventListener("drop", e => {
+    e.preventDefault();
+    drop.classList.remove("over");
+    const f = [...e.dataTransfer.files].find(f => f.type.startsWith("image/"));
+    if (f) read(f);
+  });
+  window.addEventListener("paste", e => {
+    const f = [...e.clipboardData.files].find(f => f.type.startsWith("image/"));
+    if (f) read(f);
+  });
+  $("manual").addEventListener("click", () => { draft.items.push({ name: "", cents: 0 }); renderEditor(); });
+  $("add-item").addEventListener("click", () => { draft.items.push({ name: "", cents: 0 }); renderEditor(); });
+  $("add-extra").addEventListener("click", () => { draft.extras.push({ name: "", cents: 0 }); renderEditor(); });
+
+  $("make").addEventListener("click", () => {
+    const order = {
+      t: $("title").value.trim(),
+      v: $("venmo").value.trim().replace(/^@/, ""),
+      i: draft.items.filter(i => i.name.trim() && i.cents > 0).map(i => [i.name.trim(), i.cents]),
+      x: draft.extras.reduce((s, x) => s + x.cents, 0),
+    };
+    if (!order.v || !order.i.length) {
+      $("check").className = "check bad";
+      $("check").textContent = !order.v ? "Add your Venmo username." : "Add at least one item with a price.";
+      return;
+    }
+    const url = `${location.origin}${location.pathname}#o=${encodeOrder(order)}`;
+    $("out").textContent = url;
+    $("preview").href = url;
+    $("result").hidden = false;
+    $("share").onclick = () => {
+      if (navigator.share) {
+        navigator.share({ title: order.t || "Split the bill", text: "Tap what you ordered and pay on Venmo", url });
+      } else {
+        navigator.clipboard.writeText(url).then(() => { $("share").textContent = "Copied"; });
+      }
+    };
+    $("share").textContent = navigator.share ? "Share" : "Copy link";
+  });
+}
+
+const match = location.hash.match(/^#o=([A-Za-z0-9_-]+)$/);
+match ? showFriend(decodeOrder(match[1])) : showCreate();
+</script>
+</body>
+</html>
