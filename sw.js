@@ -1,6 +1,6 @@
 // Offline support plus the share target: share a receipt screenshot to Tabsies from the phone's share sheet.
-const CACHE = "tabsies-v7";
-const SHELL = ["./", "index.html", "parse.js", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png"];
+const CACHE = "tabsies-v8";
+const SHELL = ["./", "index.html", "parse.js", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", "art/receipt.png", "art/waving.png", "art/sitting.png"];
 const CDN = "https://cdn.jsdelivr.net/";
 
 self.addEventListener("install", event => {

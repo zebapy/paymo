@@ -65,6 +65,14 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid 
 .tip { display: grid; justify-items: center; gap: 4px; text-align: center; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line); }
 .tip a { color: var(--accent); font-weight: 700; text-decoration: none; border: 1.5px solid var(--accent); border-radius: 999px; padding: 8px 16px; }
 .tip .muted { font-size: 13px; }
+.mascot { display: block; height: auto; pointer-events: none; user-select: none; }
+.hero { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 4px 12px; }
+.hero .mascot { width: 116px; grid-row: span 2; margin-right: -6px; }
+.f-head { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 0 12px; }
+.f-head .mascot { width: 72px; grid-row: span 2; }
+.f-head h1, .f-head .to { margin-bottom: 0; }
+.ready { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 8px; }
+.ready .mascot { width: 92px; margin: -36px -6px -4px 0; }
 .stage { display: grid; justify-items: center; gap: 10px; padding-block: 8px 4px; perspective: 1200px; }
 .phone { position: relative; width: min(250px, 72vw); padding: 10px; border-radius: 38px; background: #121715; box-shadow: 0 24px 48px -16px rgb(0 0 0 / .45), inset 0 0 0 2px #3a4541; transform: rotateX(8deg) rotateY(-14deg) rotateZ(3deg); transform-style: preserve-3d; transition: transform .4s ease; }
 .phone:hover, .phone:focus-within { transform: rotateX(4deg) rotateY(-6deg) rotateZ(1deg); }
@@ -108,8 +116,11 @@ input[type="number"] { font-family: var(--mono); }
 <body>
 
 <main class="wrap" id="friend" hidden>
-  <h1 id="f-title"></h1>
-  <p class="to" id="f-to"></p>
+  <header class="f-head">
+    <h1 id="f-title"></h1>
+    <img class="mascot" src="art/waving.png" alt="" width="200" height="197">
+    <p class="to" id="f-to"></p>
+  </header>
   <div id="f-items" style="display:grid;gap:8px"></div>
 </main>
 <div class="bar" id="f-bar" hidden>
@@ -122,8 +133,11 @@ input[type="number"] { font-family: var(--mono); }
 </div>
 
 <main class="wrap" id="create" hidden>
-  <h1>Split a receipt</h1>
-  <p class="muted" style="margin:0 0 4px">Drop in a receipt, send one link to the group, and everyone taps what they ordered and pays you on Venmo.</p>
+  <header class="hero">
+    <h1>Split a receipt</h1>
+    <img class="mascot" src="art/receipt.png" alt="" width="360" height="248">
+    <p class="muted" style="margin:0 0 4px">Drop in a receipt, send one link to the group, and everyone taps what they ordered and pays you on Venmo.</p>
+  </header>
   <section class="stage" aria-label="Example of what your friends see">
     <div class="phone">
       <span class="badge">Example</span>
@@ -181,7 +195,10 @@ input[type="number"] { font-family: var(--mono); }
       <span class="check" id="check"></span>
     </div>
     <div class="card" id="result" hidden>
-      <span class="label">Send this to the group</span>
+      <div class="ready">
+        <span class="label">Send this to the group</span>
+        <img class="mascot" src="art/sitting.png" alt="" width="260" height="216">
+      </div>
       <div class="out" id="out"></div>
       <div class="split">
         <button class="btn" id="copy" type="button">Copy link</button>
